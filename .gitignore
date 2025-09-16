@@ -5,8 +5,9 @@
 # Ignore OS junk
 Thumbs.db
 
-# Exceptions - git
+# Exceptions - git / github
 !.gitattributes
+!.github
 !.gitignore
 !.gitkeep
 
