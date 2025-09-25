@@ -21,6 +21,8 @@ services:
         volumes:
             - '.:/var/www/html'
             - './.coverage:/opt/phpstorm-coverage'
+            - './.devscripts/composer:/usr/local/bin/composer'
+            - './.devscripts/php:/usr/local/bin/php'
         networks:
             - sail
 networks:
