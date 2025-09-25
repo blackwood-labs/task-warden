@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Task;
 
+use App\Domain\Entity\StateTransitionException;
 use App\Domain\Entity\Task\State;
 use App\Domain\Entity\Task\Task;
 use App\Domain\Factory\TaskFactory;
@@ -43,5 +44,47 @@ final class TaskTest extends TestCase
         $this->expectException(\Error::class);
         $this->expectExceptionMessageMatches('/Property ([^ ]+) is read-only/');
         $task->text = 'Updated Task'; // @phpstan-ignore-line
+    }
+
+    #[Test]
+    public function task_can_be_closed(): void
+    {
+        $task = (new TaskFactory)->make();
+        $this->assertSame(State::OPEN, $task->state);
+
+        $task->close();
+        $this->assertSame(State::CLOSED, $task->state);
+    }
+
+    #[Test]
+    public function task_cannot_be_closed_when_already_closed(): void
+    {
+        $task = (new TaskFactory)->make(attributes: ['state' => State::CLOSED]);
+        $this->assertSame(State::CLOSED, $task->state);
+
+        $this->expectException(StateTransitionException::class);
+        $this->expectExceptionMessageMatches('/already closed/');
+        $task->close();
+    }
+
+    #[Test]
+    public function closed_task_can_be_reopened(): void
+    {
+        $task = (new TaskFactory)->make(attributes: ['state' => State::CLOSED]);
+        $this->assertSame(State::CLOSED, $task->state);
+
+        $task->reopen();
+        $this->assertSame(State::OPEN, $task->state);
+    }
+
+    #[Test]
+    public function task_cannot_be_reopened_when_already_open(): void
+    {
+        $task = (new TaskFactory)->make();
+        $this->assertSame(State::OPEN, $task->state);
+
+        $this->expectException(StateTransitionException::class);
+        $this->expectExceptionMessageMatches('/already open/');
+        $task->reopen();
     }
 }
